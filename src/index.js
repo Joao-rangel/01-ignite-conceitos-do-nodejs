@@ -14,7 +14,7 @@ function checksExistsUserAccount(request, response, next) {
   const {username} = request.headers;
   const userIndex = users.findIndex((user) => user?.username === username);
 
-  response.body = {userIndex, ...users[userIndex]};
+  request.user = {userIndex, ...users[userIndex]};
   if (userIndex >= 0) next();
 }
 
@@ -38,14 +38,14 @@ app.post('/users', (request, response) => {
 });
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
-  const {todos} = response.body;
+  const {todos} = request.user;
 
   return response.status(201).json(todos);
 });
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
   const {title, deadline} = request.body;
-  const {userIndex} = response.body;
+  const {userIndex} = request.user;
 
   const todo = {
     title,
@@ -62,10 +62,10 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   const {id} = request.params;
-  const {userIndex} = response.body;
+  const {userIndex, todos} = request.user;
   const todoPartial = request.body;
 
-  const todoIndex = users[userIndex].todos.findIndex((todo) => todo?.id === id)
+  const todoIndex = todos.findIndex((todo) => todo?.id === id)
   if (todoIndex < 0){
    return response.status(404).json({error: 'Todo não localizado'});
   }
@@ -76,9 +76,9 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
   const {id} = request.params;
-  const {userIndex} = response.body;
+  const {userIndex, todos} = request.user;
 
-  const todoIndex = users[userIndex].todos.findIndex((todo) => todo?.id === id)
+  const todoIndex = todos.findIndex((todo) => todo?.id === id)
   if (todoIndex < 0){
     return response.status(404).json({error: 'Todo não localizado'});
   }
@@ -89,15 +89,15 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
 
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
   const {id} = request.params;
-  const {userIndex} = response.body;
+  const {userIndex, todos} = request.user;
 
-  const todoIndex = users[userIndex].todos.findIndex((todo) => todo?.id === id)
+  const todoIndex = todos.findIndex((todo) => todo?.id === id)
   if (todoIndex < 0){
     return response.status(404).json({error: 'Todo não localizado'});
   }
   users[userIndex].todos.splice(todoIndex, 1);
 
-  return response.status(204).json(users[userIndex].todos[todoIndex]);
+  return response.status(204).json(users[userIndex]);
 });
 
 module.exports = app;
