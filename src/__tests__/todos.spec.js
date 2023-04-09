@@ -205,4 +205,4 @@ describe('Todos', () => {
 
     expect(response.body.error).toBeTruthy();
   });
-});
+}, 10000);

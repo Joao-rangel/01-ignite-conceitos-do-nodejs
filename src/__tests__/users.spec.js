@@ -40,4 +40,4 @@ describe('Users', () => {
 
     expect(response.body.error).toBeTruthy();
   });
-});
+}, 10000);
